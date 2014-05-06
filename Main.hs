@@ -6,32 +6,28 @@ import Data.Proxy
 
 data FB = Number Nat | Fizz | Buzz | FizzBuzz
 
-type family Mod3 (n :: Nat) :: Bool
-type instance Mod3 n = M3 n (n :<<= N2)
-type family M3 (n :: Nat) (lte3 :: Bool) :: Bool
-type instance M3 n False = M3 (n :- N3) (n :- N3 :<<= N2)
-type instance M3 N0 True = True
-type instance M3 N1 True = False
-type instance M3 N2 True = False
+type family Mod (m :: Nat) (n :: Nat) :: Nat
+type instance Mod (S m) n = MN (S m) n (n :<<= m)
+type family MN (m :: Nat) (n :: Nat) (ltePredM :: Bool) :: Nat
+type instance MN (S m) n False = MN (S m) (n :- (S m)) (n :- (S m) :<<= m)
+type instance MN m n True = n
 
-type family Mod5 (n :: Nat) :: Bool
-type instance Mod5 n = M5 n (n :<<= N4)
-type family M5 (n :: Nat) (lte5 :: Bool) :: Bool
-type instance M5 n False = M5 (n :- N5) (n :- N5 :<<= N4)
-type instance M5 N0 True = True
-type instance M5 N1 True = False
-type instance M5 N2 True = False
-type instance M5 N3 True = False
-type instance M5 N4 True = False
+type family ((n :: Nat) := (m :: Nat)) :: Bool
+type instance (Z := Z) = True
+type instance (Z := S n) = False
+type instance (S n := Z) = False
+type instance (S n := S m) = n := m
 
 type family XFizzBuzz (n :: Nat) :: FB
 type family XFB (n :: Nat) (mod3 :: Bool) (mod5 :: Bool) :: FB
-type instance XFizzBuzz n = XFB n (Mod3 n) (Mod5 n)
+type instance XFizzBuzz n = XFB n (Mod N3 n := N0) (Mod N5 n := N0)
 
 type instance XFB n True True = FizzBuzz
 type instance XFB n True False = Fizz
 type instance XFB n False True = Buzz
 type instance XFB n False False = Number n
+
+-- for representation
 
 class ToNat (n :: Nat) where toN :: Proxy n -> Int
 instance ToNat Z where toN _ = 0
