@@ -6,30 +6,32 @@ import Data.Proxy
 
 data FB = Number Nat | Fizz | Buzz | FizzBuzz
 
-type family Add15 (fb :: FB) :: FB
-type instance Add15 (Number n) = Number (n :+ N15)
-type instance Add15 Fizz = Fizz
-type instance Add15 Buzz = Buzz
-type instance Add15 FizzBuzz = FizzBuzz
+type family Mod3 (n :: Nat) :: Bool
+type instance Mod3 n = M3 n (n :<<= N2)
+type family M3 (n :: Nat) (lte3 :: Bool) :: Bool
+type instance M3 n False = M3 (n :- N3) (n :- N3 :<<= N2)
+type instance M3 N0 True = True
+type instance M3 N1 True = False
+type instance M3 N2 True = False
+
+type family Mod5 (n :: Nat) :: Bool
+type instance Mod5 n = M5 n (n :<<= N4)
+type family M5 (n :: Nat) (lte5 :: Bool) :: Bool
+type instance M5 n False = M5 (n :- N5) (n :- N5 :<<= N4)
+type instance M5 N0 True = True
+type instance M5 N1 True = False
+type instance M5 N2 True = False
+type instance M5 N3 True = False
+type instance M5 N4 True = False
 
 type family XFizzBuzz (n :: Nat) :: FB
-type instance XFizzBuzz Z = FizzBuzz
-type instance XFizzBuzz N1 = Number N1
-type instance XFizzBuzz N2 = Number N2
-type instance XFizzBuzz N3 = Fizz
-type instance XFizzBuzz N4 = Number N4
-type instance XFizzBuzz N5 = Buzz
-type instance XFizzBuzz N6 = Fizz
-type instance XFizzBuzz N7 = Number N7
-type instance XFizzBuzz N8 = Number N8
-type instance XFizzBuzz N9 = Fizz
-type instance XFizzBuzz N10 = Buzz
-type instance XFizzBuzz N11 = Number N11
-type instance XFizzBuzz N12 = Fizz
-type instance XFizzBuzz N13 = Number N13
-type instance XFizzBuzz N14 = Number N14
-type instance XFizzBuzz N15 = FizzBuzz
-type instance XFizzBuzz (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S n)))))))))))))))) = Add15 (XFizzBuzz (S n))
+type family XFB (n :: Nat) (mod3 :: Bool) (mod5 :: Bool) :: FB
+type instance XFizzBuzz n = XFB n (Mod3 n) (Mod5 n)
+
+type instance XFB n True True = FizzBuzz
+type instance XFB n True False = Fizz
+type instance XFB n False True = Buzz
+type instance XFB n False False = Number n
 
 class ToNat (n :: Nat) where toN :: Proxy n -> Int
 instance ToNat Z where toN _ = 0
